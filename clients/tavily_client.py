@@ -1,10 +1,10 @@
 import requests
-from .config import API_KEY, API_URL
+from .config import TAVILY_API_KEY, TAVILY_API_URL
 
 class TavilyClient:
     def __init__(self):
-        self.api_key = API_KEY
-        self.base_url = API_URL
+        self.api_key = TAVILY_API_KEY
+        self.base_url = TAVILY_API_URL
         self.results = []
 
     def search(self, term, max_results=5):

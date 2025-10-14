@@ -25,7 +25,7 @@ jobs:
       
       - name: Run Tavily Search
         env:
-          API_KEY: ${{ secrets.TAVILY_API_KEY }}
-          API_URL: ${{ secrets.TAVILY_API_URL }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
         run: |
           python -m workflows.tavily_search "${{ github.event.inputs.search_term }}"
