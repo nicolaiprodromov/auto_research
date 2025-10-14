@@ -1,5 +1,5 @@
 import sys
-from tavily_client import TavilyClient
+from .tavily_client import TavilyClient
 
 def main():
     if len(sys.argv) < 2:

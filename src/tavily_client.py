@@ -1,5 +1,5 @@
 import requests
-from config import API_KEY, API_URL
+from .config import API_KEY, API_URL
 
 class TavilyClient:
     def __init__(self):
