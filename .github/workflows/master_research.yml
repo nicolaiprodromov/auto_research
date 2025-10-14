@@ -1,0 +1,45 @@
+name: Master Research
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    inputs:
+      subject:
+        description: 'Subject matter to research'
+        required: false
+        type: string
+        default: 'Marvin Pontiac'
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Research Cycle
+      env:
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
+        GITHUB_MODEL: 'gpt-4o-mini'
+        GITHUB_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPO: ${{ github.event.repository.name }}
+        GITHUB_BRANCH: ${{ github.ref_name }}
+        RESEARCH_SUBJECT: ${{ github.event.inputs.subject }}
+      run: |
+        python -m workflows.master_research
