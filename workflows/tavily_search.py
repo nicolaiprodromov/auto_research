@@ -1,9 +1,9 @@
 import sys
-from .tavily_client import TavilyClient
+from clients.tavily_client import TavilyClient
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python -m src.main <search_term>")
+        print("Usage: python -m workflows.tavily_search <search_term>")
         sys.exit(1)
     
     search_term = " ".join(sys.argv[1:])

@@ -1,17 +1,17 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='tavily-search-project',
+    name='automate-research',
     version='0.1.0',
     author='Your Name',
     author_email='your.email@example.com',
-    description='A project to search the internet using the Tavily API',
-    packages=find_packages(where='src'),
-    package_dir={'': 'src'},
+    description='A project with API clients and research automation workflows',
+    packages=find_packages(include=['clients', 'clients.*', 'workflows', 'workflows.*']),
     install_requires=[
-        'requests',  # Assuming the Tavily API client uses requests
-        'python-dotenv',  # For loading environment variables from .env files
-        'pytest'  # For testing
+        'requests',
+        'python-dotenv',
+        'pytest',
+        'openai>=1.0.0'
     ],
     classifiers=[
         'Programming Language :: Python :: 3',

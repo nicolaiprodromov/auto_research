@@ -28,4 +28,4 @@ jobs:
           API_KEY: ${{ secrets.TAVILY_API_KEY }}
           API_URL: https://api.tavily.com/search
         run: |
-          python -m src.main "${{ github.event.inputs.search_term }}"
+          python -m workflows.tavily_search "${{ github.event.inputs.search_term }}"
