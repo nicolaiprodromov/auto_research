@@ -11,11 +11,15 @@ class TavilyClient:
         if not self.api_key:
             raise ValueError("API_KEY not found in environment variables")
         
-        headers = {"Authorization": f"Bearer {self.api_key}"}
-        params = {"query": term, "max_results": max_results}
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "api_key": self.api_key,
+            "query": term,
+            "max_results": max_results
+        }
         
         try:
-            response = requests.post(self.base_url, json=params, headers=headers)
+            response = requests.post(self.base_url, json=payload, headers=headers)
             response.raise_for_status()
             self.results = response.json()
             return self.results
