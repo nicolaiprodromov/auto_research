@@ -66,10 +66,7 @@ jobs:
       run: |
         TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '1p')
         if [ -n "$TERM" ]; then
-          RESULTS=$(python -m workflows.tavily_search "$TERM")
-          echo "results1<<EOF" >> $GITHUB_OUTPUT
-          echo "$RESULTS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          python -m workflows.tavily_search "$TERM" > search1.txt
         fi
     
     - name: Search Term 2
@@ -80,10 +77,7 @@ jobs:
       run: |
         TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '2p')
         if [ -n "$TERM" ]; then
-          RESULTS=$(python -m workflows.tavily_search "$TERM")
-          echo "results2<<EOF" >> $GITHUB_OUTPUT
-          echo "$RESULTS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          python -m workflows.tavily_search "$TERM" > search2.txt
         fi
     
     - name: Search Term 3
@@ -94,11 +88,14 @@ jobs:
       run: |
         TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '3p')
         if [ -n "$TERM" ]; then
-          RESULTS=$(python -m workflows.tavily_search "$TERM")
-          echo "results3<<EOF" >> $GITHUB_OUTPUT
-          echo "$RESULTS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          python -m workflows.tavily_search "$TERM" > search3.txt
         fi
+    
+    - name: Combine Search Results
+      id: combine
+      run: |
+        cat search1.txt search2.txt search3.txt > all_search_results.txt 2>/dev/null || true
+        echo "Combined search results saved"
     
     - name: Synthesize Research
       id: synthesize
@@ -106,11 +103,9 @@ jobs:
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         RESEARCH_SUBJECT: ${{ github.event.inputs.subject || 'Marvin Pontiac' }}
       run: |
-        SEARCH_RESULTS="${{ steps.search1.outputs.results1 }} ${{ steps.search2.outputs.results2 }} ${{ steps.search3.outputs.results3 }}"
-        NEW_CONTENT=$(python -m workflows.synthesize_research "${{ steps.read_research.outputs.content }}" "$SEARCH_RESULTS")
-        echo "new_content<<EOF" >> $GITHUB_OUTPUT
-        echo "$NEW_CONTENT" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        SEARCH_RESULTS=$(cat all_search_results.txt)
+        python -m workflows.synthesize_research "${{ steps.read_research.outputs.content }}" "$SEARCH_RESULTS" > new_content.txt
+        echo "New research content generated"
     
     - name: Write Research to Repository
       env:
@@ -120,9 +115,10 @@ jobs:
         GITHUB_BRANCH: ${{ github.ref_name }}
       run: |
         TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+        NEW_CONTENT=$(cat new_content.txt)
         UPDATED_CONTENT="${{ steps.read_research.outputs.content }}
 
         ## Research Update - $TIMESTAMP
-        ${{ steps.synthesize.outputs.new_content }}
+        $NEW_CONTENT
         "
         python -m workflows.write_file "docs/index.md" "$UPDATED_CONTENT" "Auto-research update: $TIMESTAMP"
