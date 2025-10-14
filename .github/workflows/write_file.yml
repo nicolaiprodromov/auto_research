@@ -1,0 +1,36 @@
+name: Write File
+
+on:
+  workflow_dispatch:
+    inputs:
+      filename:
+        description: 'Filename (with path, e.g., data/results.json)'
+        required   : true
+        type       : string
+      content:
+        description: 'File content'
+        required   : true
+        type       : string
+
+jobs:
+  write:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+      
+      - name: Install dependencies
+        run: |
+          pip install -e .
+      
+      - name: Write File to GitHub
+        env:
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPO: ${{ github.event.repository.name }}
+        run: |
+          python -m workflows.write_file "${{ github.event.inputs.filename }}" "${{ github.event.inputs.content }}"
