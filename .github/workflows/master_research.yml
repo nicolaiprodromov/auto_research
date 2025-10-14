@@ -2,7 +2,7 @@ name: Master Research
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '*/4 * * * *'
   workflow_dispatch:
     inputs:
       subject:
@@ -31,15 +31,98 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
-    - name: Run Research Cycle
+    - name: Read Current Research
+      id: read_research
       env:
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
-        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-        TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
-        GITHUB_MODEL: 'gpt-4o-mini'
         GITHUB_OWNER: ${{ github.repository_owner }}
         GITHUB_REPO: ${{ github.event.repository.name }}
         GITHUB_BRANCH: ${{ github.ref_name }}
-        RESEARCH_SUBJECT: ${{ github.event.inputs.subject }}
+        RESEARCH_SUBJECT: ${{ github.event.inputs.subject || 'Marvin Pontiac' }}
       run: |
-        python -m workflows.master_research
+        CONTENT=$(python -m workflows.read_research)
+        echo "content<<EOF" >> $GITHUB_OUTPUT
+        echo "$CONTENT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Generate Search Terms
+      id: search_terms
+      env:
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        RESEARCH_SUBJECT: ${{ github.event.inputs.subject || 'Marvin Pontiac' }}
+      run: |
+        TERMS=$(python -m workflows.generate_search_terms "${{ steps.read_research.outputs.content }}")
+        echo "terms<<EOF" >> $GITHUB_OUTPUT
+        echo "$TERMS" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+        echo "Search Terms Generated:"
+        echo "$TERMS"
+    
+    - name: Search Term 1
+      id: search1
+      env:
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
+      run: |
+        TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '1p')
+        if [ -n "$TERM" ]; then
+          RESULTS=$(python -m workflows.tavily_search "$TERM")
+          echo "results1<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Search Term 2
+      id: search2
+      env:
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
+      run: |
+        TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '2p')
+        if [ -n "$TERM" ]; then
+          RESULTS=$(python -m workflows.tavily_search "$TERM")
+          echo "results2<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Search Term 3
+      id: search3
+      env:
+        TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        TAVILY_API_URL: ${{ secrets.TAVILY_API_URL }}
+      run: |
+        TERM=$(echo "${{ steps.search_terms.outputs.terms }}" | sed -n '3p')
+        if [ -n "$TERM" ]; then
+          RESULTS=$(python -m workflows.tavily_search "$TERM")
+          echo "results3<<EOF" >> $GITHUB_OUTPUT
+          echo "$RESULTS" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
+    
+    - name: Synthesize Research
+      id: synthesize
+      env:
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        RESEARCH_SUBJECT: ${{ github.event.inputs.subject || 'Marvin Pontiac' }}
+      run: |
+        SEARCH_RESULTS="${{ steps.search1.outputs.results1 }} ${{ steps.search2.outputs.results2 }} ${{ steps.search3.outputs.results3 }}"
+        NEW_CONTENT=$(python -m workflows.synthesize_research "${{ steps.read_research.outputs.content }}" "$SEARCH_RESULTS")
+        echo "new_content<<EOF" >> $GITHUB_OUTPUT
+        echo "$NEW_CONTENT" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+    
+    - name: Write Research to Repository
+      env:
+        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        GITHUB_OWNER: ${{ github.repository_owner }}
+        GITHUB_REPO: ${{ github.event.repository.name }}
+        GITHUB_BRANCH: ${{ github.ref_name }}
+      run: |
+        TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+        UPDATED_CONTENT="${{ steps.read_research.outputs.content }}
+
+        ## Research Update - $TIMESTAMP
+        ${{ steps.synthesize.outputs.new_content }}
+        "
+        python -m workflows.write_file "docs/index.md" "$UPDATED_CONTENT" "Auto-research update: $TIMESTAMP"
