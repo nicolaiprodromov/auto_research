@@ -1,0 +1,9 @@
+requestsTavilyClient==1.0.0
+
+python-dotenvrequests==2.26.0
+
+pytestpython-dotenv==0.19.2
+
+openai>=1.0.0pytest==6.2.5
+
+openai>=1.0.0
