@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       search_term:
-        description: 'what is the name of marvin pontiac?'
+        description: 'Search term'
         required: true
         type: string
 
