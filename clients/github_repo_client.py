@@ -20,7 +20,10 @@ class GitHubRepoClient:
             "Accept": "application/vnd.github.v3+json"
         }
     
-    def write_file(self, path, content, message=None, branch="main"):
+    def write_file(self, path, content, message=None, branch=None):
+        if branch is None:
+            branch = os.environ.get("GITHUB_BRANCH", "master")
+        
         url = f"{self.base_url}/repos/{self.owner}/{self.repo}/contents/{path}"
         
         sha = None

@@ -32,5 +32,6 @@ jobs:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
           GITHUB_OWNER: ${{ github.repository_owner }}
           GITHUB_REPO: ${{ github.event.repository.name }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
         run: |
           python -m workflows.write_file "${{ github.event.inputs.filename }}" "${{ github.event.inputs.content }}"
