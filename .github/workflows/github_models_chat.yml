@@ -38,6 +38,7 @@ jobs:
     
     - name: Send message to GitHub Models
       env:
+        API_KEY: ${{ secrets.API_KEY }}
         PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         GITHUB_MODEL: ${{ inputs.model }}
       run: |
