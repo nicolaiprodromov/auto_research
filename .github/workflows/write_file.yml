@@ -11,6 +11,10 @@ on:
         description: 'File content'
         required   : true
         type       : string
+      commit_message:
+        description: 'Commit message'
+        required   : false
+        type       : string
 
 jobs:
   write:
@@ -34,4 +38,4 @@ jobs:
           GITHUB_REPO: ${{ github.event.repository.name }}
           GITHUB_BRANCH: ${{ github.ref_name }}
         run: |
-          python -m workflows.write_file "${{ github.event.inputs.filename }}" "${{ github.event.inputs.content }}"
+          python -m workflows.write_file "${{ github.event.inputs.filename }}" "${{ github.event.inputs.content }}" "${{ github.event.inputs.commit_message }}"
