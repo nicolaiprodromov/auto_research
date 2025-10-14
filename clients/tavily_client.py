@@ -9,7 +9,7 @@ class TavilyClient:
 
     def search(self, term, max_results=5):
         if not self.api_key:
-            raise ValueError("API_KEY not found in environment variables")
+            raise ValueError(f"TAVILY_API_KEY not found in environment variables: {self.api_key}")
         
         headers = {"Content-Type": "application/json"}
         payload = {

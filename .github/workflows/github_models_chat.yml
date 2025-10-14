@@ -5,13 +5,13 @@ on:
     inputs:
       message:
         description: 'Message to send to GitHub Models'
-        required: true
-        type: string
+        required   : true
+        type       : string
       model:
         description: 'AI Model to use'
-        required: false
-        default: 'gpt-4o'
-        type: choice
+        required   : false
+        default    : 'gpt-4o'
+        type       : choice
         options:
           - gpt-4o
           - gpt-4o-mini
@@ -19,7 +19,7 @@ on:
           - gpt-3.5-turbo
 
 jobs:
-  chat:
+  ask_model:
     runs-on: ubuntu-latest
     
     steps:
@@ -38,7 +38,7 @@ jobs:
     
     - name: Send message to GitHub Models
       env:
-        PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        PAT_TOKEN   : ${{ secrets.PAT_TOKEN }}
         GITHUB_MODEL: ${{ inputs.model }}
       run: |
         python -m workflows.github_models_chat "${{ inputs.message }}"

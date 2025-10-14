@@ -5,8 +5,8 @@ on:
     inputs:
       search_term:
         description: 'Search term'
-        required: true
-        type: string
+        required   : true
+        type       : string
 
 jobs:
   search:
